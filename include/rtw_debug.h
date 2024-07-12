@@ -38,7 +38,15 @@ enum {
 #define RTW_PRINT(x, ...) do {} while (0)
 #define RTW_ERR(x, ...) do {} while (0)
 #define RTW_WARN(x,...) do {} while (0)
-#define RTW_INFO(x,...) do {} while (0)
+//#define RTW_INFO(x,...) do {} while (0)
+
+#define RTW_INFO(fmt, arg...)     \
+	do {\
+		if (1) {\
+			_dbgdump(DRIVER_PREFIX fmt, ##arg);\
+		} \
+	} while (0)
+
 #define RTW_DBG(x,...) do {} while (0)
 #define RTW_PRINT_SEL(x,...) do {} while (0)
 #define _RTW_PRINT(x, ...) do {} while (0)

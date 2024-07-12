@@ -1171,6 +1171,7 @@ void EnableInterrupt8723DSdio(PADAPTER padapter)
 	pHalData = GET_HAL_DATA(padapter);
 
 	himr = cpu_to_le32(pHalData->sdio_himr);
+printk("sdio_local_write(0x%x, 0x%x);\n", SDIO_REG_HIMR, himr);
 	sdio_local_write(padapter, SDIO_REG_HIMR, 4, (u8 *)&himr);
 
 

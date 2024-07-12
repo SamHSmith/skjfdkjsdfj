@@ -220,6 +220,10 @@ ODM_GetMACReg(
 	IN	u4Byte		BitMask
 	);
 
+
+#define ODM_SetBBReg(pDM_Odm,RegAddr,BitMask,Data) PHY_SetBBReg(pDM_Odm->Adapter,RegAddr,BitMask,Data)
+#define ODM_GetBBReg(pDM_Odm,RegAddr,BitMask) PHY_QueryBBReg(pDM_Odm->Adapter,RegAddr,BitMask)
+/*
 VOID
 ODM_SetBBReg(	
 	IN 	PDM_ODM_T	pDM_Odm,
@@ -234,6 +238,7 @@ ODM_GetBBReg(
 	IN	u4Byte		RegAddr,
 	IN	u4Byte		BitMask
 	);
+*/
 
 VOID
 ODM_SetRFReg(	

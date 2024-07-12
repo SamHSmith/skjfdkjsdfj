@@ -183,7 +183,7 @@ ODM_GetMACReg(
 #endif	
 }
 
-
+/*
 VOID
 ODM_SetBBReg(	
 	IN 	PDM_ODM_T	pDM_Odm,
@@ -215,7 +215,7 @@ ODM_GetBBReg(
 	return PHY_QueryBBReg(Adapter, RegAddr, BitMask);
 #endif	
 }
-
+*/
 
 VOID
 ODM_SetRFReg(	

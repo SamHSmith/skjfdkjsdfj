@@ -275,6 +275,7 @@ static u32 sdio_init(struct dvobj_priv *dvobj)
 	/* 3 1. init SDIO bus */
 	sdio_claim_host(func);
 
+printk("plebian reachout enable func 0x%x\n", func->num);
 	err = sdio_enable_func(func);
 	if (err) {
 		dvobj->drv_dbg.dbg_sdio_init_error_cnt++;

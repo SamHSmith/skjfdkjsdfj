@@ -170,6 +170,9 @@ s32 sd_cmd52_read(struct intf_hdl *pintfhdl, u32 addr, u32 cnt, u8 *pdata)
 	if (claim_needed)
 		sdio_claim_host(func);
 	err = _sd_cmd52_read(pintfhdl, addr, cnt, pdata);
+printk("sd_cmd52_read(0x%x) -> ", addr);
+for(u32 i = 0; i < cnt; i++)
+{ printk("%x\n", pdata[i]); }
 	if (claim_needed)
 		sdio_release_host(func);
 

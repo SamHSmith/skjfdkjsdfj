@@ -874,6 +874,8 @@ static BOOLEAN HalDetectPwrDownMode(PADAPTER Adapter)
 	return pHalData->pwrdown;
 }	/* HalDetectPwrDownMode */
 
+u32 plebian_silence;
+
 static u32 rtl8723ds_hal_init(PADAPTER padapter)
 {
 	s32 ret;
@@ -1092,6 +1094,8 @@ static u32 rtl8723ds_hal_init(PADAPTER padapter)
 	/* */
 	pHalData->RfRegChnlVal[0] = PHY_QueryRFReg(padapter, (RF_PATH)0, RF_CHNLBW, bRFRegOffsetMask);
 	pHalData->RfRegChnlVal[1] = PHY_QueryRFReg(padapter, (RF_PATH)1, RF_CHNLBW, bRFRegOffsetMask);
+	
+	printk("channels values are 0x%x  0x%x\n", pHalData->RfRegChnlVal[0], pHalData->RfRegChnlVal[1]);
 
 #ifdef CONFIG_DLFW_TXPKT
 	/* Specially add for FWDL by Tx pkt write.
@@ -1293,7 +1297,7 @@ static void CardDisableRTL8723DSdio(PADAPTER padapter)
 	u32		u4bTmp;
 	u8		bMacPwrCtrlOn;
 	u8		ret = _FAIL;
-
+dump_stack();
 	/* Run LPS WL RFOFF flow */
 	ret = HalPwrSeqCmdParsing(padapter, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_SDIO_MSK, rtl8723D_enter_lps_flow);
 	if (ret == _FAIL)

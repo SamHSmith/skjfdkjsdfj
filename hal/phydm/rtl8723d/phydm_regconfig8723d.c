@@ -80,6 +80,8 @@ odm_ConfigRF_RadioB_8723D(
     
 }
 
+extern u32 plebian_silence;
+
 void 
 odm_ConfigMAC_8723D(
  	IN 	PDM_ODM_T 	pDM_Odm,
@@ -87,7 +89,9 @@ odm_ConfigMAC_8723D(
  	IN 	u1Byte 		Data
  	)
 {
+plebian_silence = 1;
 	ODM_Write1Byte(pDM_Odm, Addr, Data);
+plebian_silence = 0;
 	ODM_RT_TRACE(pDM_Odm,ODM_COMP_INIT, ODM_DBG_TRACE, ("===> ODM_ConfigMACWithHeaderFile: [MAC_REG] %08X %08X\n", Addr, Data));
 }
 
@@ -99,7 +103,9 @@ odm_ConfigBB_AGC_8723D(
     IN 	u4Byte 		Data
     )
 {
+plebian_silence = 1;
 	ODM_SetBBReg(pDM_Odm, Addr, Bitmask, Data);		
+plebian_silence = 0;
 	// Add 1us delay between BB/RF register setting.
 	ODM_delay_us(1);
 
@@ -140,6 +146,7 @@ odm_ConfigBB_PHY_8723D(
     IN 	u4Byte 		Data
     )
 {    
+plebian_silence = 1;
 /*DbgPrint("odm_ConfigBB_PHY_8723D(), Addr = 0x%x, data = 0x%x\n", Addr, Data);*/
 	if (Addr == 0xfe)
 		#ifdef CONFIG_LONG_DELAY_ISSUE
@@ -161,6 +168,7 @@ odm_ConfigBB_PHY_8723D(
 	{
 		ODM_SetBBReg(pDM_Odm, Addr, Bitmask, Data);		
 	}
+plebian_silence = 0;
 	
 	// Add 1us delay between BB/RF register setting.
 	ODM_delay_us(1);

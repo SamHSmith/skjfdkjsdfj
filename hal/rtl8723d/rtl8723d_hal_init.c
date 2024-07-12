@@ -66,6 +66,8 @@ _FWDownloadEnable(
 	}
 }
 
+extern u32 plebian_silence;
+
 static int
 _BlockWrite(
 	IN		PADAPTER		padapter,
@@ -73,6 +75,8 @@ _BlockWrite(
 	IN		u32			buffSize
 )
 {
+plebian_silence = 1;
+//panic("This we have to do something about.");
 	int ret = _SUCCESS;
 
 	u32			blockSize_p1 = 4;	/* (Default) Phase #1 : PCI muse use 4-byte write to download FW */
@@ -166,6 +170,8 @@ _BlockWrite(
 		}
 	}
 exit:
+
+plebian_silence = 0;
 	return ret;
 }
 
@@ -1046,7 +1052,7 @@ s32 rtl8723d_FirmwareDownload(PADAPTER padapter, BOOLEAN  bUsedWoWLANFw)
 		tmp_ps = rtw_read8(padapter, 0xa0);
 		tmp_ps &= 0x03;
 		if (tmp_ps != 0x01) {
-			RTW_INFO(FUNC_ADPT_FMT" tmp_ps=%x\n",
+			printk(FUNC_ADPT_FMT" tmp_ps=%x\n",
 				 FUNC_ADPT_ARG(padapter), tmp_ps);
 			pdbgpriv->dbg_downloadfw_pwr_state_cnt++;
 		}
@@ -1069,7 +1075,8 @@ s32 rtl8723d_FirmwareDownload(PADAPTER padapter, BOOLEAN  bUsedWoWLANFw)
 
 #ifdef CONFIG_FILE_FWIMG
 	if (rtw_is_file_readable(fwfilepath) == _TRUE) {
-		RTW_INFO("%s acquire FW from file:%s\n", __FUNCTION__, fwfilepath);
+// not this
+		printk("%s acquire FW from file:%s\n", __FUNCTION__, fwfilepath);
 		pFirmware->eFWSource = FW_SOURCE_IMG_FILE;
 	} else
 #endif /* CONFIG_FILE_FWIMG */
@@ -1096,7 +1103,7 @@ s32 rtl8723d_FirmwareDownload(PADAPTER padapter, BOOLEAN  bUsedWoWLANFw)
 				if (pwrpriv->wowlan_mode) {
 					pFirmware->szFwBuffer = array_mp_8723d_fw_wowlan;
 					pFirmware->ulFwLength = array_length_mp_8723d_fw_wowlan;
-					RTW_INFO(" ===> %s fw: %s, size: %d\n",
+					printk(" ===> %s fw: %s, size: %d\n",
 						 __func__, "WoWLAN", pFirmware->ulFwLength);
 				}
 #endif /* CONFIG_WOWLAN */
@@ -1105,14 +1112,14 @@ s32 rtl8723d_FirmwareDownload(PADAPTER padapter, BOOLEAN  bUsedWoWLANFw)
 				if (pwrpriv->wowlan_ap_mode) {
 					pFirmware->szFwBuffer = array_mp_8723d_fw_ap;
 					pFirmware->ulFwLength = array_length_mp_8723d_fw_ap;
-					RTW_INFO(" ===> %s fw: %s, size: %d\n",
+					printk(" ===> %s fw: %s, size: %d\n",
 						 __func__, "AP_WoWLAN", pFirmware->ulFwLength);
 				}
 #endif /* CONFIG_AP_WOWLAN */
 			} else {
 				pFirmware->szFwBuffer = array_mp_8723d_fw_nic;
 				pFirmware->ulFwLength = array_length_mp_8723d_fw_nic;
-				RTW_INFO("%s fw: %s, size: %d\n", __func__, "FW_NIC", pFirmware->ulFwLength);
+				printk("%s fw: %s, size: %d\n", __func__, "FW_NIC", pFirmware->ulFwLength);
 			}
 		break;
 	}
@@ -1134,13 +1141,13 @@ s32 rtl8723d_FirmwareDownload(PADAPTER padapter, BOOLEAN  bUsedWoWLANFw)
 	pHalData->FirmwareSubVersion = le16_to_cpu(pFwHdr->Subversion);
 	pHalData->FirmwareSignature = le16_to_cpu(pFwHdr->Signature);
 
-	RTW_INFO("%s: fw_ver=%x fw_subver=%04x sig=0x%x, Month=%02x, Date=%02x, Hour=%02x, Minute=%02x\n",
+	printk("%s: fw_ver=%x fw_subver=%04x sig=0x%x, Month=%02x, Date=%02x, Hour=%02x, Minute=%02x\n",
 		 __func__, pHalData->FirmwareVersion,
 		 pHalData->FirmwareSubVersion, pHalData->FirmwareSignature
 		 , pFwHdr->Month, pFwHdr->Date, pFwHdr->Hour, pFwHdr->Minute);
 
 	if (IS_FW_HEADER_EXIST_8723D(pFwHdr)) {
-		RTW_INFO("%s(): Shift for fw header!\n", __FUNCTION__);
+		printk("%s(): Shift for fw header!\n", __FUNCTION__);
 		/* Shift 32 bytes for FW header */
 		pFirmwareBuf = pFirmwareBuf + 32;
 		FirmwareLen = FirmwareLen - 32;
@@ -1150,7 +1157,7 @@ s32 rtl8723d_FirmwareDownload(PADAPTER padapter, BOOLEAN  bUsedWoWLANFw)
 
 	/* To check if FW already exists before download FW */
 	if (rtw_read8(padapter, REG_MCUFWDL) & RAM_DL_SEL) {
-		RTW_INFO("%s: FW exists before download FW\n", __func__);
+		printk("%s: FW exists before download FW\n", __func__);
 		rtw_write8(padapter, REG_MCUFWDL, 0x00);
 		_8051Reset8723(padapter);
 	}
@@ -1628,23 +1635,25 @@ hal_ReadEFuse_WiFi(
 	/* 0xff will be efuse default value instead of 0x00. */
 	_rtw_memset(efuseTbl, 0xFF, EFUSE_MAX_MAP_LEN);
 
-
-#ifdef CONFIG_DEBUG
-	if (0) {
+//#ifdef CONFIG_DEBUG
+#if 0
+dump_stack();
+	if (1) {
 		for (i = 0; i < 256; i++)
 			/* ReadEFuseByte(padapter, i, &efuseTbl[i], _FALSE); */
 			efuse_OneByteRead(padapter, i, &efuseTbl[i], _FALSE);
-		RTW_INFO("Efuse Content:\n");
+		printk("Efuse Content:\n");
 		for (i = 0; i < 256; i++) {
 			if (i % 16 == 0)
-				printk(KERN_ERR"\n");
-			printk(KERN_ERR"%02X ", efuseTbl[i]);
+				printk("\n");
+			printk("%02X ", efuseTbl[i]);
 		}
-		printk(KERN_ERR"\n");
+		printk("\n");
 	}
 #endif
 
 
+plebian_silence = 1;
 	/* switch bank back to bank 0 for later BT and wifi use. */
 	hal_EfuseSwitchToBank(padapter, 0, bPseudoTest);
 
@@ -1704,6 +1713,7 @@ hal_ReadEFuse_WiFi(
 			eFuse_Addr += Efuse_CalculateWordCnts(wden) * 2;
 		}
 	}
+plebian_silence = 0;
 
 	/* Copy from Efuse map to output pointer memory!!! */
 	for (i = 0; i < _size_byte; i++)

@@ -464,23 +464,38 @@ void	rtw_hal_stop_thread(_adapter *padapter)
 #endif
 }
 
-u32	rtw_hal_read_bbreg(_adapter *padapter, u32 RegAddr, u32 BitMask)
+extern u32 plebian_silence;
+
+u32	rtw_hal_read_bbreg_pleb(char* function, int line, _adapter *padapter, u32 RegAddr, u32 BitMask)
 {
+u32 old_silence = plebian_silence;
 	u32 data = 0;
+plebian_silence = 1;
 	if (padapter->HalFunc.read_bbreg)
 		data = padapter->HalFunc.read_bbreg(padapter, RegAddr, BitMask);
+plebian_silence = old_silence;
+if (old_silence == 0) {
+printk("%s:%d &(0x%x) 0x%x --> 0x%x\n", function, line, BitMask, RegAddr, data);
+}
 	return data;
 }
-void	rtw_hal_write_bbreg(_adapter *padapter, u32 RegAddr, u32 BitMask, u32 Data)
+void	rtw_hal_write_bbreg_pleb(char* function, int line, _adapter *padapter, u32 RegAddr, u32 BitMask, u32 Data)
 {
+u32 old_silence = plebian_silence;
+if (old_silence == 0) {
+printk("%s:%d &(0x%x) 0x%x <-- 0x%x\n", function, line, BitMask, RegAddr, Data);
+}
+plebian_silence = 1;
 	if (padapter->HalFunc.write_bbreg)
 		padapter->HalFunc.write_bbreg(padapter, RegAddr, BitMask, Data);
+plebian_silence = old_silence;
 }
 
-u32 rtw_hal_read_rfreg(_adapter *padapter, u32 eRFPath, u32 RegAddr, u32 BitMask)
+u32 rtw_hal_read_rfreg_pleb(char* function, int line, _adapter *padapter, u32 eRFPath, u32 RegAddr, u32 BitMask)
 {
 	u32 data = 0;
 
+plebian_silence = 1;
 	if (padapter->HalFunc.read_rfreg) {
 		data = padapter->HalFunc.read_rfreg(padapter, eRFPath, RegAddr, BitMask);
 
@@ -489,12 +504,16 @@ u32 rtw_hal_read_rfreg(_adapter *padapter, u32 eRFPath, u32 RegAddr, u32 BitMask
 				, eRFPath, RegAddr, BitMask, (data << PHY_CalculateBitShift(BitMask)), data);
 		}
 	}
+plebian_silence = 0;
 
+printk("%s:%d read_rfreg(%d, 0x%x) -&(0x%x)-> 0x%x\n", function, line, eRFPath, RegAddr, BitMask, data);
 	return data;
 }
 
-void rtw_hal_write_rfreg(_adapter *padapter, u32 eRFPath, u32 RegAddr, u32 BitMask, u32 Data)
+void rtw_hal_write_rfreg_pleb(char* function, int line, _adapter *padapter, u32 eRFPath, u32 RegAddr, u32 BitMask, u32 Data)
 {
+printk("%s:%d write_rfreg(%d, 0x%x) <-&(0x%x)- 0x%x\n", function, line, eRFPath, RegAddr, BitMask, Data);
+plebian_silence = 1;
 	if (padapter->HalFunc.write_rfreg) {
 
 		if (match_rf_write_sniff_ranges(eRFPath, RegAddr, BitMask)) {
@@ -509,6 +528,7 @@ void rtw_hal_write_rfreg(_adapter *padapter, u32 eRFPath, u32 RegAddr, u32 BitMa
 			rtw_udelay_os(2);
 #endif
 	}
+plebian_silence = 0;
 }
 
 #if defined(CONFIG_PCI_HCI)

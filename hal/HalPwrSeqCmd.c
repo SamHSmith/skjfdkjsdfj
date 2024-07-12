@@ -35,6 +35,7 @@ Major Change History:
 --*/
 #include <HalPwrSeqCmd.h>
 
+extern u32 plebian_silence;
 
 /*
  *	Description:
@@ -88,6 +89,7 @@ u8 HalPwrSeqCmdParsing(
 					value |= (GET_PWR_CFG_VALUE(PwrCfgCmd) & GET_PWR_CFG_MASK(PwrCfgCmd));
 
 					/* Write Back SDIO Local value */
+printk("writing 0x%x -> 0x%x\n", value, offset);
 					SdioLocalCmd52Write1Byte(padapter, offset, value);
 				} else
 #endif
@@ -96,6 +98,8 @@ u8 HalPwrSeqCmdParsing(
 					if (GET_PWR_CFG_BASE(PwrCfgCmd) == PWR_BASEADDR_SDIO)
 						offset = SPI_LOCAL_OFFSET | offset;
 #endif
+
+plebian_silence = 1;
 					/* Read the value from system register */
 					value = rtw_read8(padapter, offset);
 
@@ -104,6 +108,7 @@ u8 HalPwrSeqCmdParsing(
 
 					/* Write the value back to sytem register */
 					rtw_write8(padapter, offset, value);
+plebian_silence = 0;
 				}
 				break;
 

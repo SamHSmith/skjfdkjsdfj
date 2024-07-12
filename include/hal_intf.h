@@ -620,10 +620,17 @@ void	rtw_hal_stop_thread(_adapter *padapter);
 
 void rtw_hal_bcn_related_reg_setting(_adapter *padapter);
 
-u32	rtw_hal_read_bbreg(_adapter *padapter, u32 RegAddr, u32 BitMask);
-void	rtw_hal_write_bbreg(_adapter *padapter, u32 RegAddr, u32 BitMask, u32 Data);
-u32	rtw_hal_read_rfreg(_adapter *padapter, u32 eRFPath, u32 RegAddr, u32 BitMask);
-void	rtw_hal_write_rfreg(_adapter *padapter, u32 eRFPath, u32 RegAddr, u32 BitMask, u32 Data);
+u32	rtw_hal_read_bbreg_pleb(char* function, int line, _adapter *padapter, u32 RegAddr, u32 BitMask);
+void	rtw_hal_write_bbreg_pleb(char* function, int line, _adapter *padapter, u32 RegAddr, u32 BitMask, u32 Data);
+
+#define rtw_hal_read_bbreg(a,r,b) rtw_hal_read_bbreg_pleb(__FUNCTION__,__LINE__,a,r,b)
+#define rtw_hal_write_bbreg(a,r,b,d) rtw_hal_write_bbreg_pleb(__FUNCTION__,__LINE__,a,r,b,d)
+
+u32	rtw_hal_read_rfreg_pleb(char* function, int line, _adapter *padapter, u32 eRFPath, u32 RegAddr, u32 BitMask);
+void	rtw_hal_write_rfreg_pleb(char* function, int line, _adapter *padapter, u32 eRFPath, u32 RegAddr, u32 BitMask, u32 Data);
+
+#define rtw_hal_read_rfreg(a,e,r,b) rtw_hal_read_rfreg_pleb(__FUNCTION__,__LINE__,a,e,r,b)
+#define rtw_hal_write_rfreg(a,e,r,b,d) rtw_hal_write_rfreg_pleb(__FUNCTION__,__LINE__,a,e,r,b,d)
 
 #define PHY_QueryBBReg(Adapter, RegAddr, BitMask) rtw_hal_read_bbreg((Adapter), (RegAddr), (BitMask))
 #define PHY_SetBBReg(Adapter, RegAddr, BitMask, Data) rtw_hal_write_bbreg((Adapter), (RegAddr), (BitMask), (Data))
