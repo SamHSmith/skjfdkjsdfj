@@ -1297,11 +1297,15 @@ static void halbtc8723d1ant_enable_gnt_to_gpio(IN struct btc_coexist *btcoexist,
 #endif
 }
 
-static u32 halbtc8723d1ant_ltecoex_indirect_read_reg(IN struct btc_coexist *btcoexist,
-		IN u16 reg_addr)
+#define halbtc8723d1ant_ltecoex_indirect_read_reg(a,b) halbtc8723d1ant_ltecoex_indirect_read_reg_real(a,b,__FUNCTION__,__LINE__)
+
+static u32 halbtc8723d1ant_ltecoex_indirect_read_reg_real(IN struct btc_coexist *btcoexist,
+		IN u16 reg_addr, const char *caller, const int line)
 {
 	u32 j = 0, delay_count = 0;
 
+    u32 old_silence = plebian_silence;
+    plebian_silence = 1;
 
 	/* wait for ready bit before access 0x7c0		 */
 	pleb_btc_write_4byte(btcoexist, 0x7c0, 0x800F0000 | reg_addr);
@@ -1318,20 +1322,29 @@ static u32 halbtc8723d1ant_ltecoex_indirect_read_reg(IN struct btc_coexist *btco
 			break;
 	}
 
-	return pleb_btc_read_4byte(btcoexist,
+	u32 ret = pleb_btc_read_4byte(btcoexist,
 					 0x7c8);  /* get read data */
-
+	
+	if (old_silence == 0) {
+        printk("ltecoex %s:%d 0x%x -//-> 0x%x\n", caller, line, reg_addr, ret);
+    }
+    plebian_silence = old_silence;
+    return ret;
 }
 
-static void halbtc8723d1ant_ltecoex_indirect_write_reg(IN struct btc_coexist
+#define halbtc8723d1ant_ltecoex_indirect_write_reg(a,b,c,d) halbtc8723d1ant_ltecoex_indirect_write_reg_real(a,b,c,d,__FUNCTION__,__LINE__)
+
+static void halbtc8723d1ant_ltecoex_indirect_write_reg_real(IN struct btc_coexist
 		*btcoexist,
-		IN u16 reg_addr, IN u32 bit_mask, IN u32 reg_value)
+		IN u16 reg_addr, IN u32 bit_mask, IN u32 reg_value, const char *caller, const int line)
 {
 	u32 val, i = 0, j = 0, bitpos = 0, delay_count = 0;
 
+    plebian_silence = 1;
+    printk("ltecoex %s:%d &(0x%x) 0x%x <-//- 0x%x\n", caller, line, bit_mask, reg_addr, reg_value);
 
 	if (bit_mask == 0x0)
-		return;
+	{ plebian_silence = 0; return; }
 	if (bit_mask == 0xffffffff) {
 		pleb_btc_write_4byte(btcoexist, 0x7c4,
 					   reg_value); /* put write data */
@@ -1384,7 +1397,7 @@ static void halbtc8723d1ant_ltecoex_indirect_write_reg(IN struct btc_coexist
 					   0xc00F0000 | reg_addr);
 
 	}
-
+    plebian_silence = 0;
 }
 
 static void halbtc8723d1ant_ltecoex_enable(IN struct btc_coexist *btcoexist,
@@ -3443,7 +3456,7 @@ static void halbtc8723d1ant_init_hw_config(IN struct btc_coexist *btcoexist,
 					     BT_8723D_1ANT_PHASE_WLANONLY_INIT);
 
 		btcoexist->stop_coex_dm = true;
-	} else {
+	} else {     ///// THIS IS THE PATH TAKEN
 		/*Set BT polluted packet on for Tx rate adaptive not including Tx retry break by PTA, 0x45c[19] =1 */
 		pleb_btc_write_1byte_bitmask(btcoexist, 0x45e, 0x8, 0x1);
 
